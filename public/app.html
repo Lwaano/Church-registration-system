@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Church Member Directory</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <!-- Replace /logo.png with your church's logo whenever it's ready -->
+        <div class="logo-slot" id="logoSlot" aria-hidden="true">
+          <img id="logoImg" src="logo.png" alt="" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+          <div id="logoFallback" class="logo-fallback">✚</div>
+        </div>
+        <div class="brand-text">
+          <h1 id="churchName">Your Church Name</h1>
+          <p>Member Directory</p>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Main sections">
+        <button class="tab active" data-view="directory" role="tab" aria-selected="true">Directory</button>
+        <button class="tab" data-view="form" role="tab" aria-selected="false">Add Member</button>
+        <button class="tab" data-view="partners" role="tab" aria-selected="false">Partners</button>
+        <button class="tab" data-view="activity" role="tab" aria-selected="false">Activity Log</button>
+      </nav>
+    </div>
+    <div class="header-meta">
+      <span id="whoami"></span>
+      <button id="logoutBtn" class="link-btn">Log out</button>
+    </div>
+    <div class="accent-stripe" aria-hidden="true"></div>
+  </header>
+
+  <main>
+
+    <!-- DIRECTORY VIEW -->
+    <section id="view-directory" class="view active">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <input type="search" id="searchInput" placeholder="Search by name, email, or phone…" aria-label="Search members" />
+        </div>
+        <span id="memberCount" class="member-count">0 members</span>
+        <a id="exportBtn" class="btn btn-ghost" href="/api/export">Export to Excel (CSV)</a>
+      </div>
+
+      <div id="directoryContent">
+        <!-- populated by app.js -->
+      </div>
+
+      <div id="paginationBar" class="pagination-bar" hidden>
+        <button id="prevPageBtn" class="icon-btn">← Prev</button>
+        <span id="pageLabel" class="member-count"></span>
+        <button id="nextPageBtn" class="icon-btn">Next →</button>
+      </div>
+    </section>
+
+    <!-- ADD / EDIT FORM VIEW -->
+    <section id="view-form" class="view">
+      <form id="memberForm" novalidate>
+        <h2 id="formTitle">Add a Member</h2>
+        <p id="formError" class="form-error" role="alert" hidden></p>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Full name <em>*</em></span>
+            <input type="text" name="full_name" required autocomplete="name" />
+          </label>
+
+          <label class="field">
+            <span>Gender</span>
+            <select name="gender">
+              <option value="">Select…</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Prefer not to say</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Date of birth</span>
+            <input type="date" name="date_of_birth" />
+          </label>
+
+          <label class="field">
+            <span>Marital status</span>
+            <select name="marital_status">
+              <option value="">Select…</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Widowed</option>
+              <option>Divorced</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Phone</span>
+            <input type="tel" name="phone" autocomplete="tel" />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" />
+          </label>
+
+          <label class="field">
+            <span>Member since</span>
+            <input type="date" name="member_since" />
+          </label>
+
+          <label class="field field-wide">
+            <span>Address</span>
+            <input type="text" name="address" autocomplete="street-address" />
+          </label>
+        </div>
+
+        <input type="hidden" name="id" />
+
+        <div class="form-actions">
+          <button type="button" id="cancelBtn" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save member</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- PARTNERS LIST VIEW -->
+    <section id="view-partners" class="view">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <input type="search" id="partnerSearchInput" placeholder="Search by name, email, or phone…" aria-label="Search partners" />
+        </div>
+        <span id="partnerCount" class="member-count">0 partners</span>
+        <a id="partnerExportBtn" class="btn btn-ghost" href="/api/partners/export">Export to Excel (CSV)</a>
+      </div>
+
+      <div id="partnersContent">
+        <!-- populated by app.js -->
+      </div>
+
+      <div id="partnerPaginationBar" class="pagination-bar" hidden>
+        <button id="partnerPrevPageBtn" class="icon-btn">← Prev</button>
+        <span id="partnerPageLabel" class="member-count"></span>
+        <button id="partnerNextPageBtn" class="icon-btn">Next →</button>
+      </div>
+    </section>
+
+    <!-- PARTNER REVIEW / EDIT VIEW -->
+    <section id="view-partner-edit" class="view">
+      <h2 class="section-title">Review Partner Registration</h2>
+
+      <div class="panel" style="margin-bottom:1rem;">
+        <h3>What they submitted</h3>
+        <div id="partnerReadonlyGrid" class="readonly-grid"><!-- populated by app.js --></div>
+        <div>
+          <span style="display:block; color:var(--ink-soft); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Prayer requests</span>
+          <div id="partnerPrayerText" class="readonly-text"></div>
+        </div>
+        <div>
+          <span style="display:block; color:var(--ink-soft); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">Why they chose to partner</span>
+          <div id="partnerWhyText" class="readonly-text"></div>
+        </div>
+      </div>
+
+      <form id="partnerEditForm" novalidate>
+        <input type="hidden" name="id" />
+
+        <div class="panel" style="margin-bottom:1rem;">
+          <h3>For Official Use Only</h3>
+          <div class="form-grid">
+            <label class="field">
+              <span>Partner ID</span>
+              <input type="text" name="partner_id_code" />
+            </label>
+            <label class="field">
+              <span>Category assigned</span>
+              <select name="category_assigned">
+                <option value="">Select…</option>
+                <option>Blue</option>
+                <option>Bronze</option>
+                <option>Silver</option>
+                <option>Gold</option>
+                <option>Star/Diamond</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Date registered</span>
+              <input type="date" name="date_registered" />
+            </label>
+            <label class="field">
+              <span>Registered by</span>
+              <input type="text" name="registered_by" />
+            </label>
+            <label class="field">
+              <span>Receipt number</span>
+              <input type="text" name="receipt_number" />
+            </label>
+            <label class="field field-wide">
+              <span>Remarks</span>
+              <textarea name="remarks" rows="2"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Office Use — Partner Status</h3>
+          <div class="form-grid">
+            <label class="field">
+              <span>Status</span>
+              <select name="status">
+                <option value="">Not set</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Suspended</option>
+                <option>Upgraded</option>
+                <option>Downgraded</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Date of status change</span>
+              <input type="date" name="status_date" />
+            </label>
+            <label class="field">
+              <span>Authorized officer</span>
+              <input type="text" name="authorized_officer" />
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="partnerCancelBtn" class="btn btn-ghost">Back to list</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ACTIVITY LOG VIEW -->
+    <section id="view-activity" class="view">
+      <h2 class="section-title">Recent Activity</h2>
+      <p class="panel-sub">Shows who added, edited, or removed a member, most recent first.</p>
+      <div id="activityContent">
+        <!-- populated by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Delete confirmation -->
+  <div id="confirmOverlay" class="overlay" hidden>
+    <div class="confirm-box" role="alertdialog" aria-label="Confirm removal">
+      <p>Remove <strong id="confirmName"></strong> from <span id="confirmContext">the directory</span>?</p>
+      <div class="form-actions">
+        <button id="confirmCancel" class="btn btn-ghost">Cancel</button>
+        <button id="confirmDelete" class="btn btn-danger">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

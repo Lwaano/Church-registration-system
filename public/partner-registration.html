@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kingdom Partnership Registration</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo-slot" aria-hidden="true">
+          <img src="logo.png" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="logo-fallback">✚</div>
+        </div>
+        <div class="brand-text">
+          <h1>Kingdom Partnership Registration</h1>
+          <p>Envoys of Christ Love Ministry International</p>
+        </div>
+      </div>
+    </div>
+    <div class="accent-stripe" aria-hidden="true"></div>
+  </header>
+
+  <main style="max-width: 720px;">
+
+    <!-- FORM -->
+    <section id="formSection">
+      <p class="panel-sub" style="text-align:center; font-style:italic; margin-bottom:1.5rem;">
+        The Jesus Generation Church &middot; GoodResults Worldwide<br />
+        &ldquo;Together Advancing the Kingdom of God.&rdquo;
+      </p>
+
+      <form id="partnerForm" novalidate>
+        <p id="formError" class="form-error" role="alert" hidden></p>
+
+        <h2 class="section-title">Partner Information</h2>
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Full name <em>*</em></span>
+            <input type="text" name="full_name" required autocomplete="name" />
+          </label>
+
+          <label class="field">
+            <span>Date of birth</span>
+            <input type="date" name="date_of_birth" />
+          </label>
+
+          <label class="field">
+            <span>Gender</span>
+            <select name="gender">
+              <option value="">Select…</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Nationality</span>
+            <input type="text" name="nationality" />
+          </label>
+
+          <label class="field">
+            <span>Town/City</span>
+            <input type="text" name="town_city" />
+          </label>
+
+          <label class="field field-wide">
+            <span>Residential address</span>
+            <input type="text" name="residential_address" autocomplete="street-address" />
+          </label>
+
+          <label class="field">
+            <span>Phone number</span>
+            <input type="tel" name="phone" autocomplete="tel" />
+          </label>
+
+          <label class="field">
+            <span>WhatsApp number</span>
+            <input type="tel" name="whatsapp" />
+          </label>
+
+          <label class="field">
+            <span>Email address</span>
+            <input type="email" name="email" autocomplete="email" />
+          </label>
+
+          <label class="field">
+            <span>Occupation/Business</span>
+            <input type="text" name="occupation" />
+          </label>
+
+          <label class="field field-wide">
+            <span>Church (if different)</span>
+            <input type="text" name="church_if_different" />
+          </label>
+        </div>
+
+        <h2 class="section-title" style="margin-top:2rem;">Partnership Category</h2>
+        <p class="panel-sub">Please choose your preferred monthly partnership level.</p>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="partnership_category" value="Blue" />
+            <span><strong>Blue Partner</strong> — K150 – K250 Monthly</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="partnership_category" value="Bronze" />
+            <span><strong>Bronze Partner</strong> — K300 – K450 Monthly</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="partnership_category" value="Silver" />
+            <span><strong>Silver Partner</strong> — K500 – K1,000 Monthly</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="partnership_category" value="Gold" />
+            <span><strong>Gold Partner</strong> — K1,000 – K3,000 Monthly</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="partnership_category" value="Star/Diamond" />
+            <span><strong>Star / Diamond Partner</strong> — K4,000 and Above Monthly</span>
+          </label>
+        </div>
+        <label class="field" style="max-width:320px; margin-top:0.8rem;">
+          <span>Monthly partnership amount (K)</span>
+          <input type="text" name="monthly_amount" placeholder="e.g. 500" />
+        </label>
+
+        <h2 class="section-title" style="margin-top:2rem;">Method of Partnership</h2>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="payment_method" value="Mobile Money" />
+            <span>Mobile Money</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="payment_method" value="Bank Deposit/Transfer" />
+            <span>Bank Deposit/Transfer</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="payment_method" value="Cash" />
+            <span>Cash</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="payment_method" value="Standing Order" />
+            <span>Standing Order</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="payment_method" value="Other" id="paymentOtherRadio" />
+            <span>Other:</span>
+          </label>
+        </div>
+        <label class="field field-wide" style="margin-top:0.6rem;">
+          <input type="text" name="payment_method_other" id="paymentOtherText" placeholder="Please specify" disabled />
+        </label>
+
+        <h2 class="section-title" style="margin-top:2rem;">Prayer Requests</h2>
+        <p class="panel-sub">Please write any prayer requests you would like the ministry to stand with you in faith for.</p>
+        <label class="field field-wide">
+          <textarea name="prayer_requests" rows="4"></textarea>
+        </label>
+
+        <h2 class="section-title" style="margin-top:2rem;">Why I Choose to Partner</h2>
+        <p class="panel-sub">I desire to partner with this ministry because:</p>
+        <label class="field field-wide">
+          <textarea name="why_partner" rows="4"></textarea>
+        </label>
+
+        <h2 class="section-title" style="margin-top:2rem;">Partner's Declaration</h2>
+        <div class="declaration-box">
+          I willingly and joyfully commit myself to partner with Envoys of Christ Love
+          Ministry International &ndash; The Jesus Generation Church, GoodResults Worldwide
+          in advancing the Gospel of Jesus Christ. I understand that my partnership is a
+          voluntary act of worship and faith, supporting evangelism, discipleship, missions,
+          church development, community outreach, and other Kingdom assignments. I pray that
+          God will use my partnership for His glory and according to His divine purpose.
+        </div>
+
+        <label class="field field-wide" style="margin-top:1rem;">
+          <span>Signature <em>(type your full name)</em> *</span>
+          <input type="text" name="signature" required />
+        </label>
+
+        <label class="checkbox-option" style="margin-top:0.8rem;">
+          <input type="checkbox" name="declaration_agreed" required />
+          <span>I have read and I agree to the Partner's Declaration above.</span>
+        </label>
+
+        <div class="form-actions" style="justify-content:center; margin-top:2rem;">
+          <button type="submit" class="btn btn-primary">Submit Registration</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- THANK YOU (shown after successful submission) -->
+    <section id="thankYouSection" hidden>
+      <div class="thank-you-panel">
+        <h2>Thank You for Becoming a Kingdom Partner</h2>
+        <p>
+          &ldquo;And God is able to make all grace abound toward you; that you, always
+          having all sufficiency in all things, may abound to every good work.&rdquo;
+          — 2 Corinthians 9:8
+        </p>
+        <p>
+          We pray that the Lord will bless you abundantly, enlarge your territory,
+          establish the work of your hands, and reward your faithfulness as together
+          we advance His Kingdom.
+        </p>
+        <a href="/" class="btn btn-ghost" style="margin-top:1rem;">Back to Home</a>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="partner-registration.js"></script>
+</body>
+</html>

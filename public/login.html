@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — Church Member Directory</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .login-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    width: 100%;
+    max-width: 380px;
+  }
+  .login-box .logo-slot { margin: 0 auto 1rem; background: var(--primary); }
+  .login-box h1 {
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 0.25rem;
+  }
+  .login-box p.sub {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    margin: 0 0 1.5rem;
+  }
+  .login-box .field { margin-bottom: 1rem; }
+  .login-box .btn-primary { width: 100%; margin-top: 0.4rem; }
+</style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-box">
+      <div class="logo-slot" style="width:52px;height:52px;">
+        <img id="logoImg" src="logo.png" alt="" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+        <div id="logoFallback" class="logo-fallback" style="display:none;">✚</div>
+      </div>
+      <h1>Church Member Directory</h1>
+      <p class="sub">Sign in to view or manage members</p>
+
+      <p id="loginError" class="form-error" role="alert" hidden></p>
+
+      <form id="loginForm">
+        <label class="field">
+          <span>Your name</span>
+          <input type="text" name="name" required autocomplete="name" autofocus placeholder="e.g. Sarah Banda" />
+        </label>
+        <label class="field">
+          <span>Shared staff password</span>
+          <input type="password" name="password" required autocomplete="current-password" />
+        </label>
+        <button type="submit" class="btn btn-primary">Sign in</button>
+      </form>
+      <p style="text-align:center; margin-top:1.2rem;">
+        <a href="/" style="color:var(--ink-soft); font-size:0.82rem;">&larr; Back to home</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
