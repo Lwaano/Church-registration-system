@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Envoys of Christ Love Ministry International — The Jesus Generation Church</title>
+<meta name="description" content="Become a Kingdom Partner with Envoys of Christ Love Ministry International — The Jesus Generation Church and GoodResults Worldwide. Together advancing the Kingdom of God." />
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<!-- Apply the remembered theme before first paint so the page never flashes. -->
+<script>
+  try {
+    var t = localStorage.getItem('ecl-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+</script>
+<script src="ui.js" defer></script>
+<script src="landing.js" defer></script>
+</head>
+<body>
+
+  <button class="theme-toggle theme-toggle-float" data-theme-toggle type="button">☾ Dark</button>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-logo">
+        <img id="logoImg" src="logo.png" alt="" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+        <div id="logoFallback" class="logo-fallback" style="display:none;">✚</div>
+      </div>
+
+      <p class="hero-kicker">Kingdom Partnership Registration</p>
+      <h1>Envoys of Christ Love Ministry International</h1>
+      <p class="hero-sub">The Jesus Generation Church &middot; GoodResults Worldwide</p>
+      <p class="hero-tagline">&ldquo;Together Advancing the Kingdom of God.&rdquo;</p>
+
+      <div class="hero-actions">
+        <a href="/partner-registration.html" class="btn btn-on-dark">Become a Kingdom Partner</a>
+        <a href="#partnership" class="btn btn-outline-light">See partnership levels</a>
+      </div>
+
+      <!-- Figures come from /api/public/stats, which returns aggregate counts
+           only — no names, no contact details, nothing identifying. -->
+      <div class="hero-stats" id="heroStats">
+        <div>
+          <div class="hero-stat-value" id="statPartners">&mdash;</div>
+          <div class="hero-stat-label">Kingdom Partners</div>
+        </div>
+        <div>
+          <div class="hero-stat-value" id="statMembers">&mdash;</div>
+          <div class="hero-stat-label">Church Members</div>
+        </div>
+        <div>
+          <div class="hero-stat-value" id="statTowns">&mdash;</div>
+          <div class="hero-stat-label">Towns Reached</div>
+        </div>
+        <div>
+          <div class="hero-stat-value" id="statNations">&mdash;</div>
+          <div class="hero-stat-label">Nations</div>
+        </div>
+      </div>
+
+      <svg class="scroll-cue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 5v14M19 12l-7 7-7-7" />
+      </svg>
+    </div>
+  </header>
+
+  <!-- ================= WHY PARTNER ================= -->
+  <section class="landing-section" id="why">
+    <h2 class="reveal">Why partner with this vision?</h2>
+    <p class="section-lead reveal" data-delay="1">
+      The work of GOD is not sustained by one person alone, but by faithful men and
+      women who answer the call to stand together for the advancement of His Kingdom.
+    </p>
+
+    <div class="feature-grid">
+      <article class="feature-card reveal" data-delay="1">
+        <div class="feature-icon" aria-hidden="true">✝</div>
+        <h3>Souls reached</h3>
+        <p>Every seed you sow helps us preach the Gospel, hold evangelistic outreaches, and bring hope to lives through the transforming power of Jesus Christ.</p>
+      </article>
+      <article class="feature-card reveal" data-delay="2">
+        <div class="feature-icon" aria-hidden="true">📖</div>
+        <h3>Believers equipped</h3>
+        <p>Your partnership disciples believers and equips leaders, raising a generation that knows Christ and makes Him known.</p>
+      </article>
+      <article class="feature-card reveal" data-delay="3">
+        <div class="feature-icon" aria-hidden="true">🌍</div>
+        <h3>Missions supported</h3>
+        <p>Partnership carries the Gospel beyond our own walls — supporting missions, church development, and community outreach across the nations.</p>
+      </article>
+      <article class="feature-card reveal" data-delay="4">
+        <div class="feature-icon" aria-hidden="true">🙏</div>
+        <h3>Prayer covering</h3>
+        <p>Every partner is valued, appreciated, and remembered in our prayers. Share your requests and we will stand with you in faith.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= PARTNERSHIP LEVELS ================= -->
+  <section class="landing-section" id="partnership">
+    <h2 class="reveal">Partnership levels</h2>
+    <p class="section-lead reveal" data-delay="1">
+      Partner according to the grace GOD has placed upon your heart. No gift is too
+      small when it is given with love, faith, and a willing heart.
+    </p>
+
+    <div class="tier-grid">
+      <article class="tier-card reveal" data-delay="1" style="--tier-color: var(--tier-1);">
+        <span class="tier-emoji" aria-hidden="true">🔹</span>
+        <h3 class="tier-name">Blue Partner</h3>
+        <p class="tier-amount">K150 &ndash; K250 monthly</p>
+      </article>
+      <article class="tier-card reveal" data-delay="2" style="--tier-color: var(--tier-2);">
+        <span class="tier-emoji" aria-hidden="true">🥉</span>
+        <h3 class="tier-name">Bronze Partner</h3>
+        <p class="tier-amount">K300 &ndash; K450 monthly</p>
+      </article>
+      <article class="tier-card tier-featured reveal" data-delay="3" style="--tier-color: var(--tier-3);">
+        <span class="tier-flag">Most chosen</span>
+        <span class="tier-emoji" aria-hidden="true">🥈</span>
+        <h3 class="tier-name">Silver Partner</h3>
+        <p class="tier-amount">K500 &ndash; K1,000 monthly</p>
+      </article>
+      <article class="tier-card reveal" data-delay="4" style="--tier-color: var(--tier-4);">
+        <span class="tier-emoji" aria-hidden="true">🥇</span>
+        <h3 class="tier-name">Gold Partner</h3>
+        <p class="tier-amount">K1,000 &ndash; K3,000 monthly</p>
+      </article>
+      <article class="tier-card reveal" data-delay="5" style="--tier-color: var(--tier-5);">
+        <span class="tier-emoji" aria-hidden="true">💎</span>
+        <h3 class="tier-name">Star / Diamond</h3>
+        <p class="tier-amount">K4,000 and above monthly</p>
+      </article>
+    </div>
+
+    <p class="section-lead reveal" style="margin-top:2.2rem; margin-bottom:0;">
+      We also welcome those who cannot commit monthly but desire to support the vision
+      through one-time offerings, projects, missions, or special Kingdom assignments.
+    </p>
+  </section>
+
+  <!-- ================= SCRIPTURE ROTATOR ================= -->
+  <section class="landing-section" id="promise">
+    <h2 class="reveal">His promise to the willing giver</h2>
+    <p class="section-lead reveal" data-delay="1">
+      As you partner with this ministry, we believe God will open supernatural doors of
+      favour, release divine provision, and establish the work of your hands.
+    </p>
+
+    <div class="scripture-rotator reveal" data-delay="2" id="scriptureRotator" aria-live="polite">
+      <p class="scripture-text" id="scriptureText">
+        &ldquo;And God is able to make all grace abound toward you; that you, always having
+        all sufficiency in all things, may abound to every good work.&rdquo;
+      </p>
+      <p class="scripture-ref" id="scriptureRef">2 Corinthians 9:8</p>
+    </div>
+    <div class="scripture-dots reveal" data-delay="3" id="scriptureDots" role="tablist" aria-label="Choose a scripture"></div>
+  </section>
+
+  <!-- ================= CLOSING CTA ================= -->
+  <section class="landing-cta">
+    <h2>Has the LORD stirred your heart?</h2>
+    <p>
+      If He has, we warmly welcome you into this Kingdom family. Registration takes
+      just a few minutes, and you can save your progress as you go.
+    </p>
+    <div class="hero-actions" style="margin-bottom:0;">
+      <a href="/partner-registration.html" class="btn btn-on-dark">Register as a Kingdom Partner</a>
+      <a href="/login.html" class="btn btn-outline-light">Staff Login</a>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    <p style="margin:0 0 0.4rem;">
+      <strong>Envoys of Christ Love Ministry International</strong><br />
+      The Jesus Generation Church &middot; GoodResults Worldwide
+    </p>
+    <p style="margin:0; font-style:italic;">&ldquo;Reaching Out to Nations with the Love of Christ.&rdquo;</p>
+  </footer>
+
+</body>
+</html>

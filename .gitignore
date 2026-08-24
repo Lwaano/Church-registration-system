@@ -1,0 +1,6 @@
+node_modules/
+church.db
+church.db-shm
+church.db-wal
+*.log
+.env

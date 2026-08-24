@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kingdom Partnership Registration</title>
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<script>
+  try {
+    var t = localStorage.getItem('ecl-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+</script>
+<script src="ui.js" defer></script>
+<script src="partner-registration.js" defer></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo-slot" aria-hidden="true">
+          <img src="logo.png" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="logo-fallback">✚</div>
+        </div>
+        <div class="brand-text">
+          <h1>Kingdom Partnership Registration</h1>
+          <p>Envoys of Christ Love Ministry International</p>
+        </div>
+      </div>
+      <button class="theme-toggle" data-theme-toggle type="button">☾ Dark</button>
+    </div>
+    <div class="accent-stripe" aria-hidden="true"></div>
+  </header>
+
+  <!-- Sticky progress — hidden once the form is submitted -->
+  <div class="wizard-progress" id="wizardProgress">
+    <div class="wizard-progress-inner">
+      <div class="wizard-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Registration progress" id="progressBar">
+        <div class="wizard-bar-fill" id="progressFill"></div>
+      </div>
+      <ol class="wizard-steps" id="wizardSteps">
+        <li data-step="0">Invitation</li>
+        <li data-step="1">Your details</li>
+        <li data-step="2">Partnership</li>
+        <li data-step="3">Prayer</li>
+        <li data-step="4">Declaration</li>
+      </ol>
+    </div>
+  </div>
+
+  <main style="max-width: 760px;">
+
+    <form id="partnerForm" novalidate>
+      <p id="formError" class="form-error" role="alert" hidden></p>
+
+      <!-- ============ STEP 1 — THE INVITATION ============ -->
+      <section class="wizard-step active" data-step="0">
+        <div class="letter-panel">
+          <p class="letter-kicker">🤝 A Divine Invitation</p>
+          <h2>Become a Kingdom Partner</h2>
+
+          <p>Grace and Peace be multiplied unto you in the precious Name of our LORD and Savior Jesus Christ.</p>
+
+          <p>Dear Beloved in Christ,<br />GoodResults To You.</p>
+
+          <p>The Kingdom of GOD advances through men and women whose hearts are committed to seeing the Gospel reach every nation. GOD has always used willing partners to establish His purposes on the earth.</p>
+
+          <p>Envoys of Christ Love Ministry International, The Jesus Generation Church and GoodResults Worldwide, warmly invites you to become a Kingdom Partner in this GOD-given assignment of reconciling humanity back to GOD through the teaching of Christ Jesus. By partnering with this vision, you become a co-laborer with Christ in reaching souls, restoring lives, equipping believers, supporting missions, and expanding the Gospel to the nations.</p>
+
+          <blockquote class="letter-scripture">
+            &ldquo;He which soweth bountifully shall reap also bountifully.&rdquo; — 2 Corinthians 9:6
+          </blockquote>
+
+          <details class="letter-more">
+            <summary>Read the full invitation letter</summary>
+            <div>
+              <p>The work of GOD is not sustained by one person alone, but by faithful men and women who answer the call to stand together for the advancement of His Kingdom. Throughout Scripture, GOD has always raised partners who willingly supported His work with their prayers, resources, and service.</p>
+
+              <p>Your partnership is not merely a financial contribution—it is a covenant investment into the advancement of GOD's Kingdom. Every seed you sow helps us preach the Gospel, disciple believers, support evangelistic outreaches, equip leaders, care for communities, and bring hope to lives through the transforming power of Jesus Christ.</p>
+
+              <p>And again,</p>
+              <blockquote class="letter-scripture">
+                &ldquo;Give, and it shall be given unto you; good measure, pressed down, shaken together, and running over, shall men give into your bosom.&rdquo; — Luke 6:38
+              </blockquote>
+
+              <p>We prayerfully invite you to partner with us according to the grace GOD has placed upon your heart.</p>
+
+              <p>As you partner with this ministry (ENVOYS OF CHRIST LOVE), we believe God will:</p>
+              <ul class="letter-list">
+                <li>Open supernatural doors of favor.</li>
+                <li>Release divine provision and increase.</li>
+                <li>Establish the work of your hands.</li>
+                <li>Grant protection over you and your household.</li>
+                <li>Cause you to become a blessing to many generations.</li>
+                <li>Remember your seed and reward your faithfulness according to His Word.</li>
+              </ul>
+
+              <p>Every partner is valued, appreciated, and remembered in our prayers. Together we are building GOD's Kingdom and raising a generation that knows Christ and makes Him known.</p>
+
+              <p>No gift is too small when it is given with love, faith, and a willing heart. Every seed sown into GOD's Kingdom becomes a testimony of His faithfulness.</p>
+
+              <p>We also invite those who may not be able to commit monthly but desire to support the vision through one-time offerings, projects, missions, or special Kingdom assignments. Your partnership is valuable and appreciated.</p>
+
+              <p>May the LORD remember your sacrifice, multiply your harvest, and cause His grace to abound toward you in every area of your life.</p>
+
+              <p>If the LORD has stirred your heart to become one of our covenant partners, we warmly welcome you into this Kingdom family. May the LORD establish the work of your hands, enlarge your territory, supply all your needs according to His riches in glory, and cause you to abound in every good work.</p>
+
+              <p>Thank you for standing with us as we take the Gospel of Jesus Christ to the nations.</p>
+
+              <p style="font-style:italic;">&ldquo;Building lives. Advancing the Kingdom. Transforming generations.&rdquo;</p>
+            </div>
+          </details>
+
+          <details class="letter-more">
+            <summary>Our mission, vision and slogan</summary>
+            <div>
+              <div class="letter-subsection" style="border-top:none; padding-top:0; margin-top:0;">
+                <h3>Our Mission</h3>
+                <p>To reconcile broken relationship between Mankind and GOD through the knowledge of Christ Jesus by preaching and teaching the Word of Salvation (Christ Jesus).</p>
+                <p class="letter-refs">Scripture References: 2 Corinthians 5:18–21 &middot; Luke 19:10</p>
+              </div>
+
+              <div class="letter-subsection">
+                <h3>Our Vision</h3>
+                <p>To bring people to the light of the true Gospel of Christ Jesus and to bring liberty to all the captives.</p>
+                <p class="letter-refs">Scripture References: Galatians 1:6–12 &middot; John 5:39 &middot; John 15:26 &middot; Luke 4:18</p>
+              </div>
+
+              <div class="letter-subsection">
+                <h3>Our Slogan</h3>
+                <p>&ldquo;We believe in: Reconciling broken relationships, Showing Love, Enlightening Lives!&rdquo;</p>
+                <p class="letter-refs">Scripture References: 2 Corinthians 5:18–19 &middot; 1 John 3:13–18 &middot; Ephesians 1:15–19 &middot; Colossians 1:9–11</p>
+              </div>
+            </div>
+          </details>
+
+          <p class="letter-kicker" style="margin-top:2rem;">📢 ENVOYS OF CHRIST LOVE MINISTRY INTERNATIONAL</p>
+          <p style="font-style:italic; color:var(--primary); text-align:center;">&ldquo;Reaching Out to Nations with the Love of Christ.&rdquo;</p>
+
+          <div class="letter-signature">
+            Yours in Christ,<br />
+            ENVOYS OF CHRIST LOVE MINISTRY INTERNATIONAL<br /><br />
+            <strong>Prophet Trevor M. Chimbofwe</strong><br />
+            Pastor in Charge
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <a href="/" class="btn btn-ghost">Back to home</a>
+          <button type="button" class="btn btn-primary" data-next>Begin registration →</button>
+        </div>
+      </section>
+
+      <!-- ============ STEP 2 — YOUR DETAILS ============ -->
+      <section class="wizard-step" data-step="1">
+        <div class="wizard-panel">
+          <h2>Your details</h2>
+          <p class="panel-sub">Only your full name is required. Everything else helps us stay in touch and pray for you well.</p>
+
+          <div class="form-grid">
+            <label class="field field-wide">
+              <span>Full name <em>*</em></span>
+              <input type="text" name="full_name" required autocomplete="name" data-validate="required" />
+              <p class="field-hint" data-hint-for="full_name"></p>
+            </label>
+
+            <label class="field">
+              <span>Date of birth</span>
+              <input type="date" name="date_of_birth" />
+            </label>
+
+            <label class="field">
+              <span>Gender</span>
+              <select name="gender">
+                <option value="">Select…</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Nationality</span>
+              <input type="text" name="nationality" />
+            </label>
+
+            <label class="field">
+              <span>Town/City</span>
+              <input type="text" name="town_city" />
+            </label>
+
+            <label class="field field-wide">
+              <span>Residential address</span>
+              <input type="text" name="residential_address" autocomplete="street-address" />
+            </label>
+
+            <label class="field">
+              <span>Phone number</span>
+              <input type="tel" name="phone" autocomplete="tel" />
+            </label>
+
+            <label class="field">
+              <span>WhatsApp number</span>
+              <input type="tel" name="whatsapp" />
+            </label>
+
+            <label class="field">
+              <span>Email address</span>
+              <input type="email" name="email" autocomplete="email" data-validate="email" />
+              <p class="field-hint" data-hint-for="email"></p>
+            </label>
+
+            <label class="field">
+              <span>Occupation/Business</span>
+              <input type="text" name="occupation" />
+            </label>
+
+            <label class="field field-wide">
+              <span>Church (if different)</span>
+              <input type="text" name="church_if_different" />
+            </label>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" data-back>← Back</button>
+          <button type="button" class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </section>
+
+      <!-- ============ STEP 3 — PARTNERSHIP ============ -->
+      <section class="wizard-step" data-step="2">
+        <div class="wizard-panel">
+          <h2>Your partnership</h2>
+          <p class="panel-sub">Choose the level GOD has placed upon your heart. You can change this at any time by speaking with the church office.</p>
+
+          <div class="tier-choice-grid">
+            <label class="tier-choice">
+              <input type="radio" name="partnership_category" value="Blue" />
+              <span class="tier-choice-emoji" aria-hidden="true">🔹</span>
+              <span class="tier-choice-name">Blue Partner</span>
+              <span class="tier-choice-amount">K150 – K250 monthly</span>
+            </label>
+            <label class="tier-choice">
+              <input type="radio" name="partnership_category" value="Bronze" />
+              <span class="tier-choice-emoji" aria-hidden="true">🥉</span>
+              <span class="tier-choice-name">Bronze Partner</span>
+              <span class="tier-choice-amount">K300 – K450 monthly</span>
+            </label>
+            <label class="tier-choice">
+              <input type="radio" name="partnership_category" value="Silver" />
+              <span class="tier-choice-emoji" aria-hidden="true">🥈</span>
+              <span class="tier-choice-name">Silver Partner</span>
+              <span class="tier-choice-amount">K500 – K1,000 monthly</span>
+            </label>
+            <label class="tier-choice">
+              <input type="radio" name="partnership_category" value="Gold" />
+              <span class="tier-choice-emoji" aria-hidden="true">🥇</span>
+              <span class="tier-choice-name">Gold Partner</span>
+              <span class="tier-choice-amount">K1,000 – K3,000 monthly</span>
+            </label>
+            <label class="tier-choice">
+              <input type="radio" name="partnership_category" value="Star/Diamond" />
+              <span class="tier-choice-emoji" aria-hidden="true">💎</span>
+              <span class="tier-choice-name">Star / Diamond</span>
+              <span class="tier-choice-amount">K4,000 and above monthly</span>
+            </label>
+          </div>
+
+          <label class="field" style="max-width:320px; margin-top:1.2rem;">
+            <span>Monthly partnership amount (K)</span>
+            <input type="text" name="monthly_amount" inputmode="numeric" placeholder="e.g. 500" />
+          </label>
+
+          <h3 style="font-family:var(--font-display); font-size:1.05rem; margin:2rem 0 0.3rem;">How you would like to partner</h3>
+          <p class="panel-sub">Choose the method that is easiest for you.</p>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="payment_method" value="Mobile Money" />
+              <span>Mobile Money</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payment_method" value="Bank Deposit/Transfer" />
+              <span>Bank Deposit/Transfer</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payment_method" value="Cash" />
+              <span>Cash</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payment_method" value="Standing Order" />
+              <span>Standing Order</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payment_method" value="Other" id="paymentOtherRadio" />
+              <span>Other:</span>
+            </label>
+          </div>
+          <label class="field field-wide" style="margin-top:0.6rem;">
+            <input type="text" name="payment_method_other" id="paymentOtherText" placeholder="Please specify" disabled />
+          </label>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" data-back>← Back</button>
+          <button type="button" class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </section>
+
+      <!-- ============ STEP 4 — PRAYER & PURPOSE ============ -->
+      <section class="wizard-step" data-step="3">
+        <div class="wizard-panel">
+          <h2>Prayer &amp; purpose</h2>
+          <p class="panel-sub">Both of these are optional — but they are the part our pastors read most closely.</p>
+
+          <h3 style="font-family:var(--font-display); font-size:1.05rem; margin:0 0 0.3rem;">Prayer requests</h3>
+          <p class="panel-sub">Anything you would like the ministry to stand with you in faith for.</p>
+          <label class="field field-wide">
+            <textarea name="prayer_requests" rows="5" maxlength="2000" data-counter></textarea>
+          </label>
+          <p class="char-count" data-count-for="prayer_requests"></p>
+
+          <h3 style="font-family:var(--font-display); font-size:1.05rem; margin:1.8rem 0 0.3rem;">Why I choose to partner</h3>
+          <p class="panel-sub">I desire to partner with this ministry because&hellip;</p>
+          <label class="field field-wide">
+            <textarea name="why_partner" rows="5" maxlength="2000" data-counter></textarea>
+          </label>
+          <p class="char-count" data-count-for="why_partner"></p>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" data-back>← Back</button>
+          <button type="button" class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </section>
+
+      <!-- ============ STEP 5 — DECLARATION ============ -->
+      <section class="wizard-step" data-step="4">
+        <div class="wizard-panel">
+          <h2>Partner's Declaration</h2>
+          <p class="panel-sub">Please check your details, then confirm the declaration to complete your registration.</p>
+
+          <ul class="review-list" id="reviewList"><!-- filled in by partner-registration.js --></ul>
+
+          <div class="declaration-box">
+            I willingly and joyfully commit myself to partner with Envoys of Christ Love
+            Ministry International &ndash; The Jesus Generation Church, GoodResults Worldwide
+            in advancing the Gospel of Jesus Christ. I understand that my partnership is a
+            voluntary act of worship and faith, supporting evangelism, discipleship, missions,
+            church development, community outreach, and other Kingdom assignments. I pray that
+            God will use my partnership for His glory and according to His divine purpose.
+          </div>
+
+          <label class="field field-wide" style="margin-top:1.2rem;">
+            <span>Signature <em>(type your full name)</em> *</span>
+            <input type="text" name="signature" required data-validate="required" />
+            <p class="field-hint" data-hint-for="signature"></p>
+          </label>
+
+          <label class="checkbox-option" style="margin-top:0.8rem;">
+            <input type="checkbox" name="declaration_agreed" required />
+            <span>I have read and I agree to the Partner's Declaration above.</span>
+          </label>
+          <p class="field-hint" data-hint-for="declaration_agreed"></p>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" data-back>← Back</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">Submit registration</button>
+        </div>
+      </section>
+
+      <p class="wizard-saved" id="savedNote"></p>
+    </form>
+
+    <!-- ============ THANK YOU ============ -->
+    <section id="thankYouSection" hidden>
+      <div class="letter-panel">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <h2 style="text-align:center;">Welcome to the Kingdom family</h2>
+        <p class="letter-kicker" style="margin-bottom:1.8rem;">Your registration has been received</p>
+
+        <h3 style="font-family:var(--font-display); font-size:1.1rem;">Dear Partner,</h3>
+
+        <p>We would like to extend a BIG thank you from the bottom of our hearts for joining with us as partners in this work that God has laid before us. We are honoured to call you our partner and rest assured we are praying for you fervently! We do our part, God does His part, and you are doing your part. Together, we are seeing the GoodResults spread to the ends of the world with miracles following.</p>
+
+        <p>Everything we are doing in the ministry is made possible because you chose to be a consistent partner. Together with the Lord's favour, your generosity allows the GoodResults / Jesus Generation mandate to reach millions of people around the world.</p>
+
+        <details class="letter-more">
+          <summary>Read the rest of this letter</summary>
+          <div>
+            <p>The GoodResults of Jesus Christ brings life, hope, joy and peace wherever it is heard. And each day, testimonies from individuals around the world pour in to share how their lives, families and careers have been tremendously blessed and radically transformed as they hear more of our timely messages, prophecies and testimonies. You are the one that ensures we keep doing this through your commitment to this cause.</p>
+
+            <p>Partners, with all the wonderful results and expansion we've experienced so far, there are still so many out there who need to hear this truth in their lives. Prayerfully consider doing even more. Let's fulfil God's desire for everyone to hear and know the truth of God's word. We are in perilous times, and these times require us to buckle down and run with the GoodResults / Jesus Generation of Our Lord and Saviour Jesus Christ like never before!</p>
+
+            <p>We cannot carry out this global vision alone, but with your hand in ours, we can definitely do it. How about we show the whole world that the cross really did make a difference?</p>
+          </div>
+        </details>
+
+        <p>We love you dearly,</p>
+
+        <div class="letter-signature">
+          <strong>Prophets Trevor M &amp; Rabecca Chimbofwe</strong>
+        </div>
+
+        <div class="form-actions" style="justify-content:center; margin-top:2rem;">
+          <a href="/" class="btn btn-primary">Back to home</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
