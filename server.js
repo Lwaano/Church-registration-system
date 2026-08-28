@@ -1,9 +1,9 @@
 // server.js
 // -----------------------------------------------------------------------
 // Simple Express server that:
-//  1. Requires a shared staff password before any member data can be
-//     viewed or changed (each person also enters their name, which is
-//     used to attribute changes in the activity log).
+//  1. Requires each staff member to sign in with their own username and
+//     password before any member data can be viewed or changed. Admin
+//     accounts can create and manage other staff accounts from the app.
 //  2. Serves the front-end (public/ folder).
 //  3. Exposes a REST API for member records, sorting/pagination, and the
 //     activity log.
@@ -12,9 +12,12 @@
 
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 const path = require('path');
 const db = require('./db');
+const { hashPassword, verifyPassword } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,22 +25,13 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', 1); // needed for secure cookies behind Render/other proxies
 app.use(express.json());
 
-// ---- Shared password setup --------------------------------------------
-const APP_PASSWORD = process.env.APP_PASSWORD;
-if (!APP_PASSWORD) {
-  console.warn('----------------------------------------------------------------');
-  console.warn('Warning: APP_PASSWORD is not set. Set it as an environment variable');
-  console.warn('so staff have a password to log in with. Example: APP_PASSWORD=letmein');
-  console.warn('Until it is set, nobody will be able to log in.');
-  console.warn('----------------------------------------------------------------');
-}
-
-function safeCompare(a, b) {
-  const bufA = Buffer.from(String(a));
-  const bufB = Buffer.from(String(b));
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
+// Security headers (clickjacking, MIME-sniffing, referrer leakage, etc).
+// The content-security-policy is left off: the front-end still relies on a
+// few inline <script> blocks (the pre-paint theme setter) and inline
+// onerror="" handlers on the logo <img> tags, which a locked-down CSP would
+// silently break. Tightening this further is a good follow-up, but it means
+// moving those inline snippets into the .js files first.
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // ---- Sessions -------------------------------------------------------------
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
@@ -47,7 +41,20 @@ if (!process.env.SESSION_SECRET) {
   console.warn('environment for stable sessions (any long random string works).');
 }
 
+// Sessions are stored in the same database as everything else, so signing
+// in survives server restarts and redeploys instead of everyone being
+// logged out every time.
+let sessionStore;
+if (db.USE_POSTGRES) {
+  const PgSession = require('connect-pg-simple')(session);
+  sessionStore = new PgSession({ pool: db.pgPool, tableName: 'user_sessions', createTableIfMissing: true });
+} else {
+  const SqliteStore = require('better-sqlite3-session-store')(session);
+  sessionStore = new SqliteStore({ client: db.sqliteDb, expired: { clear: true, intervalMs: 15 * 60 * 1000 } });
+}
+
 app.use(session({
+  store: sessionStore,
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -63,31 +70,158 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// ---- Auth routes ----------------------------------------------------------
-app.post('/api/login', (req, res) => {
-  const { name, password } = req.body;
+function requireAdmin(req, res, next) {
+  if (!req.session.user) return res.status(401).json({ error: 'Please log in.' });
+  if (req.session.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can do that.' });
+  next();
+}
 
-  if (!name || !name.trim()) {
-    return res.status(400).json({ error: 'Please enter your name.' });
-  }
-  if (!APP_PASSWORD) {
-    return res.status(500).json({ error: 'The app password has not been configured yet. Ask whoever set up the app to set APP_PASSWORD.' });
-  }
-  if (!password || !safeCompare(password, APP_PASSWORD)) {
-    return res.status(401).json({ error: 'Incorrect password.' });
-  }
-
-  req.session.user = { name: name.trim() };
-  res.json({ name: name.trim() });
+// Brute-force protection on the login form: 10 attempts per 15 minutes per
+// IP address, regardless of which username is being tried.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many sign-in attempts. Please wait a few minutes and try again.' },
 });
 
-app.post('/api/logout', (req, res) => {
+// ---- Auth routes ----------------------------------------------------------
+app.post('/api/login', loginLimiter, async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !username.trim() || !password) {
+    return res.status(400).json({ error: 'Please enter your username and password.' });
+  }
+
+  try {
+    const user = await db.getUserByUsername(username.trim());
+    if (!user || !user.active || !(await verifyPassword(password, user.password_hash))) {
+      return res.status(401).json({ error: 'Incorrect username or password.' });
+    }
+
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Could not sign in. Please try again.' });
+      }
+      req.session.user = { id: user.id, name: user.full_name, username: user.username, role: user.role };
+      db.addLogEntry({ action: 'login', member_name: null, performed_by: user.full_name }).catch(console.error);
+      res.json(req.session.user);
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not sign in. Please try again.' });
+  }
+});
+
+app.post('/api/logout', async (req, res) => {
+  if (req.session.user) {
+    await db.addLogEntry({ action: 'logout', member_name: null, performed_by: req.session.user.name }).catch(console.error);
+  }
   req.session.destroy(() => res.status(204).send());
 });
 
 app.get('/api/me', (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
   res.json(req.session.user);
+});
+
+// Any signed-in user can change their own password.
+app.put('/api/me/password', requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 8) {
+    return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+  }
+
+  try {
+    const user = await db.getUserById(req.session.user.id);
+    if (!user || !(await verifyPassword(currentPassword || '', user.password_hash))) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+    await db.setUserPassword(user.id, await hashPassword(newPassword));
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update your password.' });
+  }
+});
+
+// ---- Staff account management (admin only) --------------------------------
+const STAFF_ROLES = ['admin', 'data-entry'];
+
+app.get('/api/users', requireAdmin, async (req, res) => {
+  try {
+    const users = await db.getAllUsers();
+    res.json(users.map((u) => ({
+      id: u.id, full_name: u.full_name, username: u.username,
+      role: u.role, active: !!u.active, created_at: u.created_at,
+    })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not load staff accounts.' });
+  }
+});
+
+app.post('/api/users', requireAdmin, async (req, res) => {
+  const { full_name, username, password, role } = req.body;
+  const errors = [];
+  if (!full_name || !full_name.trim()) errors.push('Full name is required.');
+  if (!username || !username.trim()) errors.push('Username is required.');
+  if (!password || password.length < 8) errors.push('Password must be at least 8 characters.');
+  if (role && !STAFF_ROLES.includes(role)) errors.push('Invalid role.');
+  if (errors.length) return res.status(400).json({ errors });
+
+  try {
+    if (await db.getUserByUsername(username.trim())) {
+      return res.status(409).json({ errors: ['That username is already taken.'] });
+    }
+    const user = await db.createUser({
+      full_name: full_name.trim(),
+      username: username.trim(),
+      password_hash: await hashPassword(password),
+      role: role || 'data-entry',
+    });
+    res.status(201).json({ id: user.id, full_name: user.full_name, username: user.username, role: user.role, active: !!user.active });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not create staff account.' });
+  }
+});
+
+app.put('/api/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const existing = await db.getUserById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Staff account not found.' });
+
+    const role = req.body.role || existing.role;
+    const active = req.body.active === undefined ? !!existing.active : !!req.body.active;
+    if (!STAFF_ROLES.includes(role)) return res.status(400).json({ error: 'Invalid role.' });
+
+    // Don't let the last active admin lock everyone (including themselves) out.
+    if ((role !== 'admin' || !active) && existing.role === 'admin' && !!existing.active) {
+      const admins = (await db.getAllUsers()).filter((u) => u.role === 'admin' && u.active && u.id !== existing.id);
+      if (admins.length === 0) {
+        return res.status(400).json({ error: 'At least one active admin account must remain.' });
+      }
+    }
+
+    const user = await db.updateUser(req.params.id, {
+      full_name: (req.body.full_name || existing.full_name).trim(),
+      role,
+      active,
+    });
+
+    if (req.body.password) {
+      if (req.body.password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+      await db.setUserPassword(user.id, await hashPassword(req.body.password));
+    }
+
+    res.json({ id: user.id, full_name: user.full_name, username: user.username, role: user.role, active: !!user.active });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update staff account.' });
+  }
 });
 
 // ---- Public stats ---------------------------------------------------------
@@ -303,6 +437,17 @@ app.post('/api/partners', async (req, res) => {
   if (errors.length) return res.status(400).json({ errors });
 
   try {
+    const duplicate = await db.findDuplicatePartner({
+      full_name: req.body.full_name,
+      phone: req.body.phone,
+      email: req.body.email,
+    });
+    if (duplicate) {
+      return res.status(409).json({
+        errors: ["It looks like you've already registered as a partner. If you need to update your details, please contact the church office."],
+      });
+    }
+
     const partner = await db.createPartner({
       full_name: req.body.full_name.trim(),
       date_of_birth: req.body.date_of_birth || null,

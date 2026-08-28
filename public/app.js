@@ -23,7 +23,10 @@ const partnerState = {
 };
 
 let currentUserName = '';
+let currentUserRole = '';
+let currentUserId = null;
 let pendingDelete = null; // { type: 'member' | 'partner', id, name }
+let staffUsers = [];
 
 const SORT_LABELS = {
   full_name: 'Name',
@@ -54,6 +57,25 @@ const cancelBtn = document.getElementById('cancelBtn');
 const activityContent = document.getElementById('activityContent');
 const whoami = document.getElementById('whoami');
 const logoutBtn = document.getElementById('logoutBtn');
+const staffTab = document.getElementById('staffTab');
+const staffContent = document.getElementById('staffContent');
+const staffForm = document.getElementById('staffForm');
+const staffFormError = document.getElementById('staffFormError');
+const staffFormSuccess = document.getElementById('staffFormSuccess');
+const staffSubmitBtn = document.getElementById('staffSubmitBtn');
+
+const changePasswordBtn = document.getElementById('changePasswordBtn');
+const passwordOverlay = document.getElementById('passwordOverlay');
+const passwordForm = document.getElementById('passwordForm');
+const passwordError = document.getElementById('passwordError');
+const passwordCancel = document.getElementById('passwordCancel');
+
+const resetPasswordOverlay = document.getElementById('resetPasswordOverlay');
+const resetPasswordForm = document.getElementById('resetPasswordForm');
+const resetPasswordError = document.getElementById('resetPasswordError');
+const resetPasswordName = document.getElementById('resetPasswordName');
+const resetPasswordCancel = document.getElementById('resetPasswordCancel');
+let resetPasswordUserId = null;
 
 const paginationBar = document.getElementById('paginationBar');
 const prevPageBtn = document.getElementById('prevPageBtn');
@@ -102,7 +124,10 @@ async function loadWhoAmI() {
     const res = await apiFetch('/api/me');
     const me = await res.json();
     currentUserName = me.name;
-    whoami.textContent = `Signed in as ${me.name}`;
+    currentUserRole = me.role;
+    currentUserId = me.id;
+    whoami.textContent = `Signed in as ${me.name}${me.role === 'admin' ? ' (Admin)' : ''}`;
+    staffTab.hidden = me.role !== 'admin';
   } catch {
     // apiFetch already redirects on 401
   }
@@ -127,6 +152,7 @@ function showView(name, activeTab) {
   if (name === 'partners') loadPartners();
   if (name === 'overview') loadDashboard();
   if (name === 'directory' && !state.members.length) loadMembers();
+  if (name === 'staff') loadStaff();
 }
 
 tabs.forEach((tab) => {
@@ -646,14 +672,25 @@ confirmDelete.addEventListener('click', async () => {
 // Activity log
 // =============================================================================
 const ACTION_LABELS = { added: 'added', updated: 'updated', removed: 'removed', registered: 'registered as a Kingdom Partner' };
+const ACTIVITY_DOT_CLASSES = { registered: 'added', login: 'login', logout: 'logout' };
+
+// Login/logout events have no member record to reference, so they get their
+// own sentence instead of trying to force them through the "did X to Y"
+// template every other action uses.
+function activityLineHTML(log) {
+  const who = `<strong>${escapeHTML(log.performed_by || 'Someone')}</strong>`;
+  if (log.action === 'login') return `${who} signed in`;
+  if (log.action === 'logout') return `${who} signed out`;
+  return `${who} ${ACTION_LABELS[log.action] || log.action} <strong>${escapeHTML(log.member_name || 'a record')}</strong>`;
+}
 
 function activityListHTML(logs) {
   return `
     <ul class="activity-list">
       ${logs.map((log) => `
         <li>
-          <span class="activity-dot activity-${log.action === 'registered' ? 'added' : log.action}"></span>
-          <span><strong>${escapeHTML(log.performed_by || 'Someone')}</strong> ${ACTION_LABELS[log.action] || log.action} <strong>${escapeHTML(log.member_name || 'a record')}</strong></span>
+          <span class="activity-dot activity-${ACTIVITY_DOT_CLASSES[log.action] || log.action}"></span>
+          <span>${activityLineHTML(log)}</span>
           <span class="activity-time">${formatDateTime(log.created_at)}</span>
         </li>
       `).join('')}
@@ -925,6 +962,192 @@ async function loadOverviewActivity() {
     // apiFetch already redirects on 401
   }
 }
+
+// =============================================================================
+// Change my own password
+// =============================================================================
+
+changePasswordBtn.addEventListener('click', () => {
+  passwordForm.reset();
+  passwordError.hidden = true;
+  passwordOverlay.hidden = false;
+});
+
+passwordCancel.addEventListener('click', () => {
+  passwordOverlay.hidden = true;
+});
+
+passwordForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  passwordError.hidden = true;
+
+  const data = Object.fromEntries(new FormData(passwordForm).entries());
+  const res = await apiFetch('/api/me/password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    passwordError.textContent = body.error || 'Could not change your password.';
+    passwordError.hidden = false;
+    return;
+  }
+
+  passwordOverlay.hidden = true;
+});
+
+// =============================================================================
+// STAFF ACCOUNTS (admin only)
+// =============================================================================
+
+async function loadStaff() {
+  staffContent.innerHTML = '<p class="panel-sub">Loading…</p>';
+  try {
+    const res = await apiFetch('/api/users');
+    staffUsers = await res.json();
+    renderStaff();
+  } catch {
+    // apiFetch already redirects on 401
+  }
+}
+
+function roleLabel(role) {
+  return role === 'admin' ? 'Admin' : 'Data entry';
+}
+
+function renderStaff() {
+  if (!staffUsers.length) {
+    staffContent.innerHTML = '<div class="empty-state"><strong>No staff accounts yet</strong>Use the form above to create the first one.</div>';
+    return;
+  }
+
+  const rows = staffUsers.map((u) => `
+    <tr>
+      <td>
+        <div class="member-name">${escapeHTML(u.full_name)}</div>
+        <div class="member-sub">@${escapeHTML(u.username)}</div>
+      </td>
+      <td>
+        <select data-role-select="${u.id}" ${u.id === currentUserId ? 'disabled' : ''}>
+          <option value="data-entry" ${u.role === 'data-entry' ? 'selected' : ''}>Data entry</option>
+          <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+        </select>
+      </td>
+      <td>${u.active
+        ? '<span class="status-badge status-active"><span class="status-icon" aria-hidden="true">✓</span>Active</span>'
+        : '<span class="status-badge status-inactive"><span class="status-icon" aria-hidden="true">○</span>Inactive</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" data-reset-password="${u.id}" data-name="${escapeHTML(u.full_name)}">Reset password</button>
+          <button class="icon-btn ${u.active ? 'danger' : ''}" data-toggle-active="${u.id}" ${u.id === currentUserId ? 'disabled' : ''}>${u.active ? 'Deactivate' : 'Activate'}</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  staffContent.innerHTML = `
+    <table class="member-table">
+      <thead>
+        <tr><th>Staff member</th><th>Role</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  staffContent.querySelectorAll('[data-role-select]').forEach((sel) => {
+    sel.addEventListener('change', () => updateStaffUser(Number(sel.dataset.roleSelect), { role: sel.value }));
+  });
+  staffContent.querySelectorAll('[data-toggle-active]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const user = staffUsers.find((u) => u.id === Number(btn.dataset.toggleActive));
+      if (user) updateStaffUser(user.id, { active: !user.active });
+    });
+  });
+  staffContent.querySelectorAll('[data-reset-password]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      resetPasswordUserId = Number(btn.dataset.resetPassword);
+      resetPasswordName.textContent = btn.dataset.name;
+      resetPasswordForm.reset();
+      resetPasswordError.hidden = true;
+      resetPasswordOverlay.hidden = false;
+    });
+  });
+}
+
+async function updateStaffUser(id, patch) {
+  const res = await apiFetch(`/api/users/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    alert(body.error || 'Could not update that staff account.');
+  }
+  loadStaff();
+}
+
+staffForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  staffFormError.hidden = true;
+  staffFormSuccess.hidden = true;
+
+  // Guards against the "taken" error you'd get from clicking twice while
+  // the first request is still in flight.
+  staffSubmitBtn.disabled = true;
+
+  const data = Object.fromEntries(new FormData(staffForm).entries());
+
+  let res;
+  try {
+    res = await apiFetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } finally {
+    staffSubmitBtn.disabled = false;
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    staffFormError.textContent = (body.errors && body.errors.join(' ')) || 'Could not create that account.';
+    staffFormError.hidden = false;
+    return;
+  }
+
+  staffFormSuccess.textContent = `"${data.full_name}" was created — they can now sign in with the username and password you set.`;
+  staffFormSuccess.hidden = false;
+  staffForm.reset();
+  loadStaff();
+});
+
+resetPasswordCancel.addEventListener('click', () => {
+  resetPasswordOverlay.hidden = true;
+  resetPasswordUserId = null;
+});
+
+resetPasswordForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  resetPasswordError.hidden = true;
+
+  const data = Object.fromEntries(new FormData(resetPasswordForm).entries());
+  const res = await apiFetch(`/api/users/${resetPasswordUserId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    resetPasswordError.textContent = body.error || 'Could not reset that password.';
+    resetPasswordError.hidden = false;
+    return;
+  }
+
+  resetPasswordOverlay.hidden = true;
+  resetPasswordUserId = null;
+});
 
 // ---- Init ------------------------------------------------------------------
 loadWhoAmI();

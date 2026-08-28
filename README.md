@@ -14,9 +14,18 @@ need access.
   presented as a five-step wizard with a progress bar, inline validation, and
   a draft that is saved in the visitor's own browser as they go; submissions
   are reviewed and managed by staff in a dedicated Partners tab
-- **Login screen** — one shared staff password protects the rest of the app; each
-  person also enters their name, which is used to credit their changes in
-  the activity log
+- **Login screen** — every staff member signs in with their own username and
+  password; **Staff accounts** (admin only) creates, deactivates, and manages
+  everyone else's accounts, and each person's name is used to credit their
+  changes in the activity log
+- **Security hardening** — HTTP security headers (Helmet), rate-limiting on
+  the sign-in form to slow down password guessing, hashed passwords (no
+  plaintext passwords are ever stored), and sessions stored in the database
+  so nobody is logged out when the server restarts or redeploys
+- **Duplicate registration detection** — if the same person (matched on name
+  + phone or name + email) submits the partnership form twice, the second
+  submission is stopped with a friendly message instead of creating a
+  duplicate record
 - **Overview dashboard** — the staff landing tab: headline partner count, stat
   tiles, a twelve-month registration trend, partnership-level and town
   breakdowns, a gender split, and a status roll-up. Every chart has a
@@ -26,8 +35,8 @@ need access.
   (table on desktop, cards on mobile). Click a column heading to sort by it.
 - **Add / Edit form** — captures name, gender, date of birth, marital status,
   phone, email, address, and member-since date
-- **Activity Log** — shows who added, edited, or removed each member, most
-  recent first
+- **Activity Log** — shows who signed in and out (with the exact time), and
+  who added, edited, or removed each member or partner, most recent first
 - **Export to Excel** — a button that downloads all (or filtered/searched)
   members as a `.csv` file, which opens directly in Excel
 - **SQLite database** (`church.db`) by default — a single file, no server
@@ -44,10 +53,15 @@ cd church-member-app
 npm install
 ```
 
-Copy `.env.example` to `.env` and set a password:
+Copy `.env.example` to `.env` and set a session secret:
 ```
-APP_PASSWORD=choose-a-shared-password
 SESSION_SECRET=any-long-random-string
+```
+
+Then create your first staff account (you'll be asked for a full name,
+username, and password):
+```bash
+npm run create-admin
 ```
 
 Then:
@@ -55,14 +69,16 @@ Then:
 npm start
 ```
 
-Then open **http://localhost:3000** in your browser, and sign in with your
-name and the `APP_PASSWORD` you set. Share that same password with your
-colleagues — each person enters their own name at login so the activity log
-can tell who did what.
+Open **http://localhost:3000** in your browser and sign in with the
+username and password you just created. That account has the **admin**
+role, so once you're signed in you can create accounts for the rest of
+your staff from the **Staff** tab instead of running the script again —
+see [Staff accounts and roles](#staff-accounts-and-roles) below.
 
 The first time you run it, a `church.db` file will be created automatically
-in the project folder — that's your database. Back it up occasionally (it's
-just one file, so you can copy it anywhere).
+in the project folder — that's your database. See
+[Backing up your data](#backing-up-your-data) below for how to back it up
+regularly instead of just occasionally.
 
 ## Adding your church logo
 
@@ -87,11 +103,12 @@ and edit this line:
 3. Build command: `npm install`
 4. Start command: `npm start`
 5. Before creating the service, scroll to **Environment Variables** and add:
-   - `APP_PASSWORD` — the shared password your staff will log in with
    - `SESSION_SECRET` — any long random string (so logins survive restarts)
-6. Render will give you a URL like `https://your-church.onrender.com` —
-   that's the link you share with your team. Give them the URL plus the
-   `APP_PASSWORD` — they each choose their own name at login.
+6. Render will give you a URL like `https://your-church.onrender.com`.
+   Open Render's **Shell** tab for your service and run `npm run create-admin`
+   once to create your first sign-in account — after that, sign in and
+   create everyone else's accounts from the **Staff** tab (see
+   [Staff accounts and roles](#staff-accounts-and-roles)).
 
 **Important note on the free tier:** Render's free web services use a
 temporary filesystem, which means the `church.db` file (and any data in it)
@@ -106,6 +123,87 @@ testing, but for real member data you have two options once you're ready:
 Other simple options that work the same way: [Railway](https://railway.app)
 and [Fly.io](https://fly.io) — both support persistent storage even on
 inexpensive tiers.
+
+## Staff accounts and roles
+
+There is no shared password anymore — every staff member signs in with their
+own username and password. Two roles exist:
+
+- **Admin** — everything a data-entry user can do, plus the **Staff** tab,
+  where they can create new staff accounts, promote/demote roles, deactivate
+  or reactivate an account, and reset anyone's password.
+- **Data entry** — full access to members, partners, and the dashboard, but
+  no access to the Staff tab.
+
+**Creating the very first account** (there's no one signed in yet to do it
+from the app) is done from the command line:
+```bash
+npm run create-admin
+```
+This asks for a full name, username, and password, and creates an admin
+account. Run it again any time you need to create another admin the same
+way — for example if everyone forgets their password, or you're setting up
+a second person who should manage staff accounts.
+
+**Creating everyone else's account** is done from inside the app: sign in
+as an admin, open the **Staff** tab, and fill in the "Add a staff account"
+form. Give the new person their username and temporary password out of
+band (in person, a phone call, etc.) — anyone can change their own password
+afterwards from the **Change password** link next to Log out.
+
+A safety rail is built in: the app won't let you deactivate or demote the
+last remaining active admin, so you can't accidentally lock everyone out.
+
+## Security
+
+A few things were added specifically to make this safe to put on the public
+internet:
+
+- **Rate-limited sign-in** — the `/api/login` route accepts at most 10
+  attempts per 15 minutes per IP address, which makes guessing a staff
+  password by brute force impractical.
+- **Hashed passwords** — passwords are never stored in plain text. Each one
+  is hashed with Node's built-in `scrypt` (with its own random salt) before
+  it touches the database.
+- **HTTP security headers** — the [Helmet](https://helmetjs.github.io/)
+  middleware sets standard protective headers (clickjacking protection,
+  MIME-sniffing protection, a strict referrer policy, and more) on every
+  response.
+- **Database-backed sessions** — signed-in sessions are stored in the same
+  database as everything else (a `sessions` table for SQLite, or
+  `user_sessions` for Postgres) instead of in the server's memory. That
+  means a server restart or redeploy no longer logs everyone out.
+
+One deliberate thing was *not* tightened yet: the app doesn't set a
+Content-Security-Policy header, because a few pages still rely on small
+inline `<script>` blocks (the light/dark theme pre-paint setter) and inline
+`onerror=""` handlers on the logo images, both of which a locked-down CSP
+would silently break. Moving those into the `.js` files is a reasonable
+follow-up if you want to tighten this further.
+
+## Backing up your data
+
+Run this any time you want a safety copy of your data:
+```bash
+npm run backup
+```
+
+- **If you're using the default SQLite database**, this makes a consistent
+  snapshot of `church.db` (safe to run even while the server is running)
+  into `backups/church-<timestamp>.db`, and automatically keeps only the
+  most recent 30 backups.
+- **If you're using PostgreSQL** (`DATABASE_URL` is set), this shells out to
+  `pg_dump` to produce `backups/church-<timestamp>.sql`. This needs the
+  PostgreSQL client tools installed and on your `PATH` — if you'd rather
+  not install those, most hosted Postgres providers (Neon, Supabase, Render
+  Postgres) also take their own automatic backups you can restore from in
+  their dashboard.
+
+The `backups/` folder is git-ignored, same as the database itself. To back
+up automatically instead of remembering to run this by hand, schedule it —
+Windows Task Scheduler or `cron` locally, or your host's scheduled-job
+feature if you're deployed (e.g. a Render Cron Job running
+`npm run backup` daily).
 
 ## Exporting data to Excel
 
@@ -158,6 +256,9 @@ only file you need to touch.
 church-member-app/
 ├── server.js                    # Express server, auth, and REST API routes
 ├── db.js                        # All database logic (SQLite or Postgres)
+├── auth.js                      # Password hashing (scrypt) helpers
+├── create-admin.js              # CLI script: creates the first staff account
+├── backup.js                    # CLI script: `npm run backup`
 ├── package.json
 ├── .env.example                 # Copy to .env for local settings
 ├── public/
@@ -214,11 +315,15 @@ individual records are ever served publicly.
 - Submissions and staff edits both show up in the **Activity Log**.
 - Partner data has its own **Export to Excel (CSV)** button, separate from
   the member export.
+- If someone submits the form twice with the same name and phone (or same
+  name and email) — for example after refreshing the page — the second
+  submission is rejected with a friendly message instead of creating a
+  duplicate record.
 
 ## Possible future additions
 
-- Individual named staff accounts with per-person passwords and roles
-  (admin vs. viewer), instead of one shared password
+- Email or SMS notification to pastors when a new partner registers
 - Household/family grouping
 - Ministry or small-group tagging
 - Photo uploads per member
+- Search/filter improvements as the directory grows large

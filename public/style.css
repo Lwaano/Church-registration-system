@@ -421,6 +421,17 @@ main {
   animation: floatUp var(--dur) var(--ease) both;
 }
 
+.form-success {
+  background: color-mix(in srgb, var(--status-good) 10%, transparent);
+  color: var(--status-good);
+  border: 1px solid color-mix(in srgb, var(--status-good) 28%, transparent);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  animation: floatUp var(--dur) var(--ease) both;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -442,6 +453,17 @@ main {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 .field input:disabled { background: var(--surface-2); color: var(--ink-muted); cursor: not-allowed; }
+
+/* Inline role picker in the Staff Accounts table (not wrapped in .field) */
+.member-table select[data-role-select] {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+.member-table select[data-role-select]:disabled { background: var(--surface-2); color: var(--ink-muted); cursor: not-allowed; }
 .field-wide { grid-column: 1 / -1; }
 
 /* Inline per-field validation (wizard) */
@@ -651,6 +673,8 @@ a.btn {
 .activity-added { background: var(--series-3); }
 .activity-updated { background: var(--series-1); }
 .activity-removed { background: var(--danger); }
+.activity-login { background: var(--status-good); }
+.activity-logout { background: var(--ink-muted); }
 
 .activity-time {
   margin-left: auto;

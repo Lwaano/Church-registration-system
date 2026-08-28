@@ -32,8 +32,15 @@ function resolveSort(sort, dir) {
 let getAllMembers, getMemberById, createMember, updateMember, deleteMember,
     getAllMembersForExport, addLogEntry, getRecentLogs;
 let createPartner, getAllPartners, getAllPartnersForExport, getPartnerById,
-    updatePartner, deletePartner;
+    updatePartner, deletePartner, findDuplicatePartner;
 let getPublicStats, getDashboardStats;
+let getUserByUsername, getUserById, createUser, getAllUsers, updateUser,
+    setUserPassword, countUsers;
+
+// Handles used directly by server.js to back the session store with the
+// same database the rest of the app already uses, instead of opening a
+// second connection just for sessions.
+let pgPool, sqliteDb;
 
 // ---- Stats helpers -------------------------------------------------------
 // The growth chart always wants twelve labelled buckets, including months
@@ -72,6 +79,7 @@ if (USE_POSTGRES) {
       ? false
       : { rejectUnauthorized: false }, // required by most hosted Postgres providers
   });
+  pgPool = pool;
 
   const ready = pool.query(`
     CREATE TABLE IF NOT EXISTS members (
@@ -124,6 +132,15 @@ if (USE_POSTGRES) {
       status                TEXT,
       status_date           DATE,
       authorized_officer    TEXT
+    );
+    CREATE TABLE IF NOT EXISTS users (
+      id             SERIAL PRIMARY KEY,
+      full_name      TEXT NOT NULL,
+      username       TEXT NOT NULL UNIQUE,
+      password_hash  TEXT NOT NULL,
+      role           TEXT NOT NULL DEFAULT 'data-entry',
+      active         BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at     TIMESTAMP DEFAULT NOW()
     )
   `).catch((err) => {
     console.error('Could not reach the Postgres database yet:', err.message);
@@ -364,6 +381,81 @@ if (USE_POSTGRES) {
     };
   };
 
+  // Two submissions count as the same person if the name matches and either
+  // the phone or the email also matches — catches accidental double-submits
+  // (e.g. a page reload) without blocking someone who genuinely shares a
+  // name with an existing partner.
+  findDuplicatePartner = async ({ full_name, phone, email }) => {
+    await ready;
+    const name = (full_name || '').trim().toLowerCase();
+    if (!name) return null;
+    const phoneVal = (phone || '').trim();
+    const emailVal = (email || '').trim().toLowerCase();
+    if (!phoneVal && !emailVal) return null;
+
+    const { rows } = await pool.query(
+      `SELECT * FROM partners
+        WHERE lower(trim(full_name)) = $1
+          AND (
+            ($2 <> '' AND trim(phone) = $2)
+            OR ($3 <> '' AND lower(trim(email)) = $3)
+          )
+        LIMIT 1`,
+      [name, phoneVal, emailVal]
+    );
+    return rows[0] || null;
+  };
+
+  getUserByUsername = async (username) => {
+    await ready;
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE lower(username) = lower($1)', [username]
+    );
+    return rows[0];
+  };
+
+  getUserById = async (id) => {
+    await ready;
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return rows[0];
+  };
+
+  createUser = async ({ full_name, username, password_hash, role }) => {
+    await ready;
+    const { rows } = await pool.query(
+      `INSERT INTO users (full_name, username, password_hash, role)
+       VALUES ($1,$2,$3,$4) RETURNING *`,
+      [full_name, username, password_hash, role]
+    );
+    return rows[0];
+  };
+
+  getAllUsers = async () => {
+    await ready;
+    const { rows } = await pool.query('SELECT * FROM users ORDER BY full_name ASC');
+    return rows;
+  };
+
+  updateUser = async (id, { full_name, role, active }) => {
+    await ready;
+    const { rows } = await pool.query(
+      `UPDATE users SET full_name=$1, role=$2, active=$3 WHERE id=$4 RETURNING *`,
+      [full_name, role, active, id]
+    );
+    return rows[0];
+  };
+
+  setUserPassword = async (id, password_hash) => {
+    await ready;
+    await pool.query('UPDATE users SET password_hash=$1 WHERE id=$2', [password_hash, id]);
+  };
+
+  countUsers = async () => {
+    await ready;
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
+    return rows[0].count;
+  };
+
 } else {
   // ---------------------- SQLite (local, default) ----------------------
   const Database = require('better-sqlite3');
@@ -371,6 +463,7 @@ if (USE_POSTGRES) {
 
   const db = new Database(path.join(__dirname, 'church.db'));
   db.pragma('journal_mode = WAL');
+  sqliteDb = db;
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS members (
@@ -423,6 +516,15 @@ if (USE_POSTGRES) {
       status                TEXT,
       status_date           TEXT,
       authorized_officer    TEXT
+    );
+    CREATE TABLE IF NOT EXISTS users (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      full_name      TEXT NOT NULL,
+      username       TEXT NOT NULL UNIQUE,
+      password_hash  TEXT NOT NULL,
+      role           TEXT NOT NULL DEFAULT 'data-entry',
+      active         INTEGER NOT NULL DEFAULT 1,
+      created_at     TEXT DEFAULT (datetime('now'))
     )
   `);
 
@@ -629,6 +731,57 @@ if (USE_POSTGRES) {
       monthly: fillMonthly(monthly, months),
     };
   };
+
+  // Two submissions count as the same person if the name matches and either
+  // the phone or the email also matches — catches accidental double-submits
+  // (e.g. a page reload) without blocking someone who genuinely shares a
+  // name with an existing partner.
+  findDuplicatePartner = async ({ full_name, phone, email }) => {
+    const name = (full_name || '').trim().toLowerCase();
+    if (!name) return null;
+    const phoneVal = (phone || '').trim();
+    const emailVal = (email || '').trim().toLowerCase();
+    if (!phoneVal && !emailVal) return null;
+
+    return db.prepare(`
+      SELECT * FROM partners
+       WHERE lower(trim(full_name)) = ?
+         AND (
+           (? <> '' AND trim(phone) = ?)
+           OR (? <> '' AND lower(trim(email)) = ?)
+         )
+       LIMIT 1
+    `).get(name, phoneVal, phoneVal, emailVal, emailVal) || null;
+  };
+
+  getUserByUsername = async (username) =>
+    db.prepare('SELECT * FROM users WHERE lower(username) = lower(?)').get(username);
+
+  getUserById = async (id) =>
+    db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+
+  createUser = async ({ full_name, username, password_hash, role }) => {
+    const info = db.prepare(`
+      INSERT INTO users (full_name, username, password_hash, role)
+      VALUES (@full_name, @username, @password_hash, @role)
+    `).run({ full_name, username, password_hash, role });
+    return getUserById(info.lastInsertRowid);
+  };
+
+  getAllUsers = async () => db.prepare('SELECT * FROM users ORDER BY full_name ASC').all();
+
+  updateUser = async (id, { full_name, role, active }) => {
+    db.prepare(`
+      UPDATE users SET full_name=@full_name, role=@role, active=@active WHERE id=@id
+    `).run({ full_name, role, active: active ? 1 : 0, id });
+    return getUserById(id);
+  };
+
+  setUserPassword = async (id, password_hash) => {
+    db.prepare('UPDATE users SET password_hash=? WHERE id=?').run(password_hash, id);
+  };
+
+  countUsers = async () => db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
 }
 
 module.exports = {
@@ -647,6 +800,16 @@ module.exports = {
   getPartnerById,
   updatePartner,
   deletePartner,
+  findDuplicatePartner,
   getPublicStats,
   getDashboardStats,
+  getUserByUsername,
+  getUserById,
+  createUser,
+  getAllUsers,
+  updateUser,
+  setUserPassword,
+  countUsers,
+  pgPool,
+  sqliteDb,
 };
