@@ -18,6 +18,9 @@ need access.
   password; **Staff accounts** (admin only) creates, deactivates, and manages
   everyone else's accounts, and each person's name is used to credit their
   changes in the activity log
+  when logging in as staff these are the super user credentials
+  admin : admin
+  password : admin1234
 - **Security hardening** — HTTP security headers (Helmet), rate-limiting on
   the sign-in form to slow down password guessing, hashed passwords (no
   plaintext passwords are ever stored), and sessions stored in the database
@@ -104,11 +107,11 @@ and edit this line:
 4. Start command: `npm start`
 5. Before creating the service, scroll to **Environment Variables** and add:
    - `SESSION_SECRET` — any long random string (so logins survive restarts)
-6. Render will give you a URL like `https://your-church.onrender.com`.
-   Open Render's **Shell** tab for your service and run `npm run create-admin`
-   once to create your first sign-in account — after that, sign in and
-   create everyone else's accounts from the **Staff** tab (see
-   [Staff accounts and roles](#staff-accounts-and-roles)).
+6. Render will give you a URL like `https://your-church.onrender.com`. You
+   still need to create your first sign-in account there — see
+   [Staff accounts and roles](#staff-accounts-and-roles) for how (Render's
+   **free tier has no Shell tab**, so use the environment-variable method
+   described there, not `npm run create-admin`).
 
 **Important note on the free tier:** Render's free web services use a
 temporary filesystem, which means the `church.db` file (and any data in it)
@@ -136,14 +139,27 @@ own username and password. Two roles exist:
   no access to the Staff tab.
 
 **Creating the very first account** (there's no one signed in yet to do it
-from the app) is done from the command line:
-```bash
-npm run create-admin
-```
-This asks for a full name, username, and password, and creates an admin
-account. Run it again any time you need to create another admin the same
-way — for example if everyone forgets their password, or you're setting up
-a second person who should manage staff accounts.
+from the app) can be done two ways:
+
+- **If you have a terminal/shell on the machine running the app** (local
+  development, or a host with shell access): run
+  ```bash
+  npm run create-admin
+  ```
+  This asks for a full name, username, and password, and creates an admin
+  account. Run it again any time you need another admin the same way — for
+  example if everyone forgets their password.
+
+- **If you don't** (e.g. Render's free tier has no Shell tab): set two
+  environment variables on your host — `BOOTSTRAP_ADMIN_USERNAME` and
+  `BOOTSTRAP_ADMIN_PASSWORD` (8+ characters) — and restart/redeploy the
+  service. On startup, if no staff accounts exist yet, the app creates an
+  admin account from those two values automatically and logs a confirmation
+  line. It only ever does this once — as soon as any account exists, setting
+  these again does nothing, so it's safe to leave them in place, though it's
+  better practice to delete them from your host's environment variables once
+  you've signed in (no reason to leave a plaintext password sitting in a
+  dashboard indefinitely).
 
 **Creating everyone else's account** is done from inside the app: sign in
 as an admin, open the **Staff** tab, and fill in the "Add a staff account"

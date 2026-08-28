@@ -603,7 +603,42 @@ app.get('/app.html', (req, res) => {
 // makes requires a session).
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-app.listen(PORT, () => {
-  console.log(`Church Member App running at http://localhost:${PORT}`);
-  console.log(`Database: ${db.USE_POSTGRES ? 'PostgreSQL (external, shared)' : 'SQLite (local file, church.db)'}`);
+// ---- First-admin bootstrap via environment variables -----------------------
+// `npm run create-admin` needs an interactive terminal, which isn't available
+// on hosts that don't expose a shell (e.g. Render's free tier). As a
+// shell-free alternative: if no staff accounts exist yet and these two
+// environment variables are set, create the first admin account on startup.
+// Safe to leave the variables in place afterward — this only ever fires
+// while the account table is empty, so it does nothing once an account
+// exists. Still best practice to remove them from your host's environment
+// variables once you've signed in, since a plaintext password sitting in
+// your dashboard indefinitely is unnecessary exposure.
+async function bootstrapAdminFromEnv() {
+  const username = process.env.BOOTSTRAP_ADMIN_USERNAME;
+  const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!username || !password) return;
+
+  try {
+    if (await db.countUsers() > 0) return;
+    if (password.length < 8) {
+      console.warn('BOOTSTRAP_ADMIN_PASSWORD must be at least 8 characters — skipping admin bootstrap.');
+      return;
+    }
+    await db.createUser({
+      full_name: 'Admin',
+      username,
+      password_hash: await hashPassword(password),
+      role: 'admin',
+    });
+    console.log(`Bootstrap admin account "${username}" created from BOOTSTRAP_ADMIN_USERNAME/PASSWORD.`);
+  } catch (err) {
+    console.error('Could not create the bootstrap admin account:', err.message);
+  }
+}
+
+bootstrapAdminFromEnv().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Church Member App running at http://localhost:${PORT}`);
+    console.log(`Database: ${db.USE_POSTGRES ? 'PostgreSQL (external, shared)' : 'SQLite (local file, church.db)'}`);
+  });
 });
