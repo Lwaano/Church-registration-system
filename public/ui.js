@@ -61,6 +61,35 @@
     });
   }
 
+  // ---- Password visibility toggles -----------------------------------------
+  // Every <input type="password"> on the page gets a "Show"/"Hide" button
+  // next to it, so people can check what they typed before submitting.
+  function initPasswordToggles() {
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+      if (input.dataset.toggleWrapped) return;
+      input.dataset.toggleWrapped = 'true';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'password-field';
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'password-toggle';
+      btn.textContent = 'Show';
+      btn.setAttribute('aria-label', 'Show password');
+      wrapper.appendChild(btn);
+
+      btn.addEventListener('click', () => {
+        const revealed = input.type === 'text';
+        input.type = revealed ? 'password' : 'text';
+        btn.textContent = revealed ? 'Show' : 'Hide';
+        btn.setAttribute('aria-label', revealed ? 'Show password' : 'Hide password');
+      });
+    });
+  }
+
   // ---- Scroll reveals -----------------------------------------------------
   function initReveals() {
     const items = document.querySelectorAll('.reveal');
@@ -164,9 +193,10 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { initTheme(); initReveals(); });
+    document.addEventListener('DOMContentLoaded', () => { initTheme(); initReveals(); initPasswordToggles(); });
   } else {
     initTheme();
     initReveals();
+    initPasswordToggles();
   }
 })();

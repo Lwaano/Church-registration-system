@@ -466,6 +466,26 @@ main {
 .member-table select[data-role-select]:disabled { background: var(--surface-2); color: var(--ink-muted); cursor: not-allowed; }
 .field-wide { grid-column: 1 / -1; }
 
+/* Show/hide toggle injected next to every password field by ui.js */
+.password-field { position: relative; display: flex; }
+.password-field input { flex: 1; padding-right: 3.4rem; }
+.password-toggle {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+}
+.password-toggle:hover { background: var(--surface-2); }
+.password-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
 /* Inline per-field validation (wizard) */
 .field.has-error input, .field.has-error select, .field.has-error textarea {
   border-color: var(--danger);

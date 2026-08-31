@@ -189,6 +189,11 @@ internet:
   database as everything else (a `sessions` table for SQLite, or
   `user_sessions` for Postgres) instead of in the server's memory. That
   means a server restart or redeploy no longer logs everyone out.
+- **Inactivity timeout** — staff are automatically signed out after 30
+  minutes with no activity (refreshing the page or clicking around counts
+  as activity and resets the clock, so this only kicks in when someone
+  actually walks away). Adjustable via the `INACTIVITY_TIMEOUT_MINUTES`
+  environment variable if you want it shorter or longer.
 
 One deliberate thing was *not* tightened yet: the app doesn't set a
 Content-Security-Policy header, because a few pages still rely on small

@@ -65,13 +65,33 @@ app.use(session({
   },
 }));
 
+// Staff are signed out automatically after this many minutes of no activity
+// (no API requests), even though the session cookie itself lasts 7 days.
+// Every authenticated request "touches" the session and resets the clock.
+const INACTIVITY_TIMEOUT_MS = (Number(process.env.INACTIVITY_TIMEOUT_MINUTES) || 30) * 60 * 1000;
+
+function touchSession(req, res) {
+  if (!req.session.user) {
+    res.status(401).json({ error: 'Please log in.' });
+    return false;
+  }
+  const now = Date.now();
+  if (req.session.lastActivity && now - req.session.lastActivity > INACTIVITY_TIMEOUT_MS) {
+    req.session.destroy(() => {});
+    res.status(401).json({ error: 'You were signed out due to inactivity. Please sign in again.' });
+    return false;
+  }
+  req.session.lastActivity = now;
+  return true;
+}
+
 function requireAuth(req, res, next) {
-  if (!req.session.user) return res.status(401).json({ error: 'Please log in.' });
+  if (!touchSession(req, res)) return;
   next();
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.session.user) return res.status(401).json({ error: 'Please log in.' });
+  if (!touchSession(req, res)) return;
   if (req.session.user.role !== 'admin') return res.status(403).json({ error: 'Only admins can do that.' });
   next();
 }
@@ -106,6 +126,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         return res.status(500).json({ error: 'Could not sign in. Please try again.' });
       }
       req.session.user = { id: user.id, name: user.full_name, username: user.username, role: user.role };
+      req.session.lastActivity = Date.now();
       db.addLogEntry({ action: 'login', member_name: null, performed_by: user.full_name }).catch(console.error);
       res.json(req.session.user);
     });
@@ -122,8 +143,7 @@ app.post('/api/logout', async (req, res) => {
   req.session.destroy(() => res.status(204).send());
 });
 
-app.get('/api/me', (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: 'Not logged in.' });
+app.get('/api/me', requireAuth, (req, res) => {
   res.json(req.session.user);
 });
 
