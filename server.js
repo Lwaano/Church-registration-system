@@ -147,6 +147,43 @@ app.put('/api/me/password', requireAuth, async (req, res) => {
   }
 });
 
+// Any signed-in user can change their own display name and/or username.
+// The display name (full_name) is what shows up in the activity log and
+// the "Signed in as ..." header; the username is only the login ID.
+app.put('/api/me/profile', requireAuth, async (req, res) => {
+  const { currentPassword, full_name, username } = req.body;
+  if ((!full_name || !full_name.trim()) && (!username || !username.trim())) {
+    return res.status(400).json({ error: 'Full name or username is required.' });
+  }
+
+  try {
+    const user = await db.getUserById(req.session.user.id);
+    if (!user || !(await verifyPassword(currentPassword || '', user.password_hash))) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+
+    if (username && username.trim()) {
+      const trimmed = username.trim();
+      const existing = await db.getUserByUsername(trimmed);
+      if (existing && existing.id !== user.id) {
+        return res.status(409).json({ error: 'That username is already taken.' });
+      }
+      await db.setUserUsername(user.id, trimmed);
+      req.session.user.username = trimmed;
+    }
+
+    if (full_name && full_name.trim()) {
+      await db.setUserFullName(user.id, full_name.trim());
+      req.session.user.name = full_name.trim();
+    }
+
+    res.json(req.session.user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update your account.' });
+  }
+});
+
 // ---- Staff account management (admin only) --------------------------------
 const STAFF_ROLES = ['admin', 'data-entry'];
 

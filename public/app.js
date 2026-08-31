@@ -25,6 +25,7 @@ const partnerState = {
 let currentUserName = '';
 let currentUserRole = '';
 let currentUserId = null;
+let currentUsername = '';
 let pendingDelete = null; // { type: 'member' | 'partner', id, name }
 let staffUsers = [];
 
@@ -63,6 +64,12 @@ const staffForm = document.getElementById('staffForm');
 const staffFormError = document.getElementById('staffFormError');
 const staffFormSuccess = document.getElementById('staffFormSuccess');
 const staffSubmitBtn = document.getElementById('staffSubmitBtn');
+
+const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+const usernameOverlay = document.getElementById('usernameOverlay');
+const usernameForm = document.getElementById('usernameForm');
+const usernameError = document.getElementById('usernameError');
+const usernameCancel = document.getElementById('usernameCancel');
 
 const changePasswordBtn = document.getElementById('changePasswordBtn');
 const passwordOverlay = document.getElementById('passwordOverlay');
@@ -126,6 +133,7 @@ async function loadWhoAmI() {
     currentUserName = me.name;
     currentUserRole = me.role;
     currentUserId = me.id;
+    currentUsername = me.username;
     whoami.textContent = `Signed in as ${me.name}${me.role === 'admin' ? ' (Admin)' : ''}`;
     staffTab.hidden = me.role !== 'admin';
   } catch {
@@ -962,6 +970,47 @@ async function loadOverviewActivity() {
     // apiFetch already redirects on 401
   }
 }
+
+// =============================================================================
+// Change my own username
+// =============================================================================
+
+changeUsernameBtn.addEventListener('click', () => {
+  usernameForm.reset();
+  usernameForm.elements['full_name'].value = currentUserName;
+  usernameForm.elements['username'].value = currentUsername;
+  usernameError.hidden = true;
+  usernameOverlay.hidden = false;
+});
+
+usernameCancel.addEventListener('click', () => {
+  usernameOverlay.hidden = true;
+});
+
+usernameForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  usernameError.hidden = true;
+
+  const data = Object.fromEntries(new FormData(usernameForm).entries());
+  const res = await apiFetch('/api/me/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    usernameError.textContent = body.error || 'Could not update your account.';
+    usernameError.hidden = false;
+    return;
+  }
+
+  const me = await res.json();
+  currentUserName = me.name;
+  currentUsername = me.username;
+  whoami.textContent = `Signed in as ${me.name}${me.role === 'admin' ? ' (Admin)' : ''}`;
+  usernameOverlay.hidden = true;
+});
 
 // =============================================================================
 // Change my own password

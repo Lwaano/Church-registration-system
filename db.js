@@ -35,7 +35,7 @@ let createPartner, getAllPartners, getAllPartnersForExport, getPartnerById,
     updatePartner, deletePartner, findDuplicatePartner;
 let getPublicStats, getDashboardStats;
 let getUserByUsername, getUserById, createUser, getAllUsers, updateUser,
-    setUserPassword, countUsers;
+    setUserPassword, setUserUsername, setUserFullName, countUsers;
 
 // Handles used directly by server.js to back the session store with the
 // same database the rest of the app already uses, instead of opening a
@@ -450,6 +450,16 @@ if (USE_POSTGRES) {
     await pool.query('UPDATE users SET password_hash=$1 WHERE id=$2', [password_hash, id]);
   };
 
+  setUserUsername = async (id, username) => {
+    await ready;
+    await pool.query('UPDATE users SET username=$1 WHERE id=$2', [username, id]);
+  };
+
+  setUserFullName = async (id, full_name) => {
+    await ready;
+    await pool.query('UPDATE users SET full_name=$1 WHERE id=$2', [full_name, id]);
+  };
+
   countUsers = async () => {
     await ready;
     const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
@@ -781,6 +791,14 @@ if (USE_POSTGRES) {
     db.prepare('UPDATE users SET password_hash=? WHERE id=?').run(password_hash, id);
   };
 
+  setUserUsername = async (id, username) => {
+    db.prepare('UPDATE users SET username=? WHERE id=?').run(username, id);
+  };
+
+  setUserFullName = async (id, full_name) => {
+    db.prepare('UPDATE users SET full_name=? WHERE id=?').run(full_name, id);
+  };
+
   countUsers = async () => db.prepare('SELECT COUNT(*) AS count FROM users').get().count;
 }
 
@@ -809,6 +827,8 @@ module.exports = {
   getAllUsers,
   updateUser,
   setUserPassword,
+  setUserUsername,
+  setUserFullName,
   countUsers,
   pgPool,
   sqliteDb,

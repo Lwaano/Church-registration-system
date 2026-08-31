@@ -43,6 +43,7 @@
     </div>
     <div class="header-meta">
       <span id="whoami"></span>
+      <button id="changeUsernameBtn" class="link-btn">Account details</button>
       <button id="changePasswordBtn" class="link-btn">Change password</button>
       <button class="theme-toggle" data-theme-toggle type="button">☾ Dark</button>
       <button id="logoutBtn" class="link-btn">Log out</button>
@@ -412,6 +413,33 @@
         <button id="confirmCancel" class="btn btn-ghost">Cancel</button>
         <button id="confirmDelete" class="btn btn-danger">Remove</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Change my own display name and/or username -->
+  <div id="usernameOverlay" class="overlay" hidden>
+    <div class="confirm-box" role="alertdialog" aria-label="Account details">
+      <p><strong>Your account details</strong></p>
+      <p class="panel-sub" style="margin-top:-0.4rem;">Your full name is what shows in the activity log; your username is only used to sign in.</p>
+      <p id="usernameError" class="form-error" role="alert" hidden></p>
+      <form id="usernameForm" novalidate>
+        <label class="field">
+          <span>Full name</span>
+          <input type="text" name="full_name" required autocomplete="name" />
+        </label>
+        <label class="field">
+          <span>Username</span>
+          <input type="text" name="username" required autocomplete="username" />
+        </label>
+        <label class="field">
+          <span>Current password <em>(to confirm it's you)</em></span>
+          <input type="password" name="currentPassword" required autocomplete="current-password" />
+        </label>
+        <div class="form-actions">
+          <button type="button" id="usernameCancel" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
     </div>
   </div>
 
